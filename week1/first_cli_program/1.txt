@@ -1,0 +1,8 @@
+test_login,PASS
+test_logout,FAIL
+test_password_reset,PASS
+test_signup,SKIP
+test_login,x
+test_login12
+
+test_some, SKIP
