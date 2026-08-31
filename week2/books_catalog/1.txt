@@ -2,4 +2,6 @@
 Dune,Frank Herbert,1965,reading
 Neuromancer,William Gibson,1984,planned
 Neuromancer,William Gibson,1984,lol
+Neuromancer,William Gibson,1984,lol
+Neuromancer,William Gibson,1984
 Neuromancer,William Gibson,1984
