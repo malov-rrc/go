@@ -1,0 +1,5 @@
+1984,George Orwell,1949,read
+Dune,Frank Herbert,1965,reading
+Neuromancer,William Gibson,1984,planned
+Neuromancer,William Gibson,1984,lol
+Neuromancer,William Gibson,1984
