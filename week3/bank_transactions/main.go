@@ -9,10 +9,6 @@ import (
 )
 
 func main() {
-	//if len(os.Args) < 2 {
-	//	fmt.Fprintln(os.Stderr, "укажите путь к файлу")
-	//	os.Exit(1)
-	//}
 	account := models.Account{Balance: 0}
 	fileName := flag.String("file", "transactions.txt", "текстовый файл с транзакциями")
 	flag.Parse()
