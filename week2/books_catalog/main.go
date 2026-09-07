@@ -30,12 +30,12 @@ func getTestStat(books []Book, errors []error) string {
 		counts[r.Status]++
 	}
 	var out strings.Builder
-	out.WriteString(fmt.Sprintf("Total: %d", total))
-	out.WriteString(fmt.Sprint("\nBy status: "))
+	fmt.Fprintf(&out, "Total: %d", total)
+	fmt.Fprint(&out, "\nBy status: ")
 	for index, status := range []string{"read", "reading", "planned", "unknown"} {
 		if count, ok := counts[status]; ok && count > 0 {
 			if index != 0 {
-				out.WriteString(fmt.Sprint(", "))
+				fmt.Fprint(&out, ", ")
 			}
 			out.WriteString(fmt.Sprintf("%s: %d", status, count))
 		}
@@ -43,7 +43,7 @@ func getTestStat(books []Book, errors []error) string {
 	if len(errors) > 0 {
 		out.WriteString(fmt.Sprintf("\nInvalid lines: %d", len(errors)))
 	}
-	out.WriteString(fmt.Sprint("\nSorted by year:\n"))
+	fmt.Fprint(&out, "\nSorted by year:\n")
 	models.SortBooksByYear(books)
 	for i := range books {
 		out.WriteString(fmt.Sprintf("%d - %s\n", books[i].Year, books[i].Title))
