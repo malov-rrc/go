@@ -20,6 +20,7 @@ func parseLine(line string) (Book, error) {
 		return Book{}, errors.New("invalid Line")
 	}
 	year, err := strconv.Atoi(splittedLine[2])
+	// осознанный выбор, хочется просто не парсить год, а не делать всю строку невалидной
 	if err != nil {
 		year = -1
 	}
