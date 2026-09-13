@@ -2,13 +2,17 @@ package models
 
 import (
 	"bank_transactions/utils"
-	"errors"
 	"fmt"
 	"strings"
 )
 
 type Account struct {
 	Balance float64
+}
+
+type rejectedEntry struct {
+	Line int
+	Err  error
 }
 
 func (a *Account) Deposit(amount float64) error {
@@ -31,20 +35,21 @@ func (a *Account) Withdraw(amount float64) error {
 }
 
 func (account *Account) MakeTransactions(commandList []string) string {
-	rejectedTransactions := make(map[int]error)
+	var rejectedTransactions []rejectedEntry
 	var totalDeposited float64
 	var totalWithdrawn float64
 	var transactionsApplied int
 	for i, line := range commandList {
 		command, amount, err := utils.ParseLine(line)
 		if err != nil {
-			rejectedTransactions[i+1] = err
+			rejectedTransactions = append(rejectedTransactions, rejectedEntry{Line: i + 1, Err: err})
+			continue
 		}
 		switch command {
 		case string(Deposit):
 			err := account.Deposit(amount)
 			if err != nil {
-				rejectedTransactions[i+1] = err
+				rejectedTransactions = append(rejectedTransactions, rejectedEntry{Line: i + 1, Err: err})
 			} else {
 				totalDeposited += amount
 				transactionsApplied++
@@ -52,20 +57,21 @@ func (account *Account) MakeTransactions(commandList []string) string {
 		case string(Withdraw):
 			err := account.Withdraw(amount)
 			if err != nil {
-				rejectedTransactions[i+1] = err
+				rejectedTransactions = append(rejectedTransactions, rejectedEntry{Line: i + 1, Err: err})
 			} else {
 				totalWithdrawn += amount
 				transactionsApplied++
 			}
 		default:
-			rejectedTransactions[i+1] = errors.New("unknown command: " + command)
+			defaultError := &ValidationError{Field: "command", Msg: "unknown command: " + command}
+			rejectedTransactions = append(rejectedTransactions, rejectedEntry{Line: i + 1, Err: defaultError})
 		}
 	}
 	return account.getTransactionsStat(rejectedTransactions, totalDeposited, totalWithdrawn, transactionsApplied)
 }
 
 func (account *Account) getTransactionsStat(
-	rejectedTransactions map[int]error,
+	rejectedTransactions []rejectedEntry,
 	deposited float64,
 	withdrawn float64,
 	transactionsApplied int,
@@ -78,8 +84,8 @@ func (account *Account) getTransactionsStat(
 	fmt.Fprintf(&out, "Transactions rejected: %d\n", len(rejectedTransactions))
 	if len(rejectedTransactions) > 0 {
 		fmt.Fprintln(&out, "Rejected details:")
-		for i, err := range rejectedTransactions {
-			fmt.Fprintf(&out, "%d: %s\n", i, err)
+		for _, rejectedTransaction := range rejectedTransactions {
+			fmt.Fprintf(&out, "%d: %s\n", rejectedTransaction.Line, rejectedTransaction.Err)
 		}
 	}
 	return out.String()
