@@ -15,22 +15,22 @@ type rejectedEntry struct {
 	Err  error
 }
 
-func (a *Account) Deposit(amount float64) error {
+func (account *Account) Deposit(amount float64) error {
 	if amount <= 0 {
 		return &ValidationError{"deposit", "amount must be positive"}
 	}
-	a.Balance += amount
+	account.Balance += amount
 	return nil
 }
 
-func (a *Account) Withdraw(amount float64) error {
+func (account *Account) Withdraw(amount float64) error {
 	if amount <= 0 {
 		return &ValidationError{"withdraw", "amount must be positive"}
 	}
-	if amount > a.Balance {
-		return &InsufficientFundsError{Requested: amount, Available: a.Balance}
+	if amount > account.Balance {
+		return &InsufficientFundsError{Requested: amount, Available: account.Balance}
 	}
-	a.Balance -= amount
+	account.Balance -= amount
 	return nil
 }
 
