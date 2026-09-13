@@ -39,7 +39,6 @@ func TestGetNotEmptyFileLines(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// ВАЖНО: сбрасываем позицию в начало, иначе чтение вернёт пусто
 			if _, err := tmpFile.Seek(0, io.SeekStart); err != nil {
 				t.Fatal(err)
 			}
