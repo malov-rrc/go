@@ -21,7 +21,7 @@ func GetNotEmptyFileLines(file *os.File) []string {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		strings.TrimSpace(line)
+		line = strings.TrimSpace(line)
 		if len(line) > 0 {
 			result = append(result, line)
 		}
