@@ -42,8 +42,6 @@ func (account *Account) Withdraw(amount float64) error {
 	return nil
 }
 
-// ProcessTransactions — вся бизнес-логика, никакого форматирования.
-// Раньше это была первая половина MakeTransactions.
 func (account *Account) ProcessTransactions(commandList []string) TransactionResult {
 	var rejectedTransactions []rejectedEntry
 	var totalDeposited float64
@@ -88,8 +86,6 @@ func (account *Account) ProcessTransactions(commandList []string) TransactionRes
 	}
 }
 
-// MakeTransactions — тонкая обёртка для main: вычислить + отформатировать.
-// Старые вызовы в main.go не трогаем вообще.
 func (account *Account) MakeTransactions(commandList []string) string {
 	result := account.ProcessTransactions(commandList)
 	return account.getTransactionsStat(result)
