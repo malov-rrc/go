@@ -15,6 +15,14 @@ type rejectedEntry struct {
 	Err  error
 }
 
+type TransactionResult struct {
+	Rejected            []rejectedEntry
+	TotalDeposited      float64
+	TotalWithdrawn      float64
+	TransactionsApplied int
+	FinalBalance        float64
+}
+
 func (account *Account) Deposit(amount float64) error {
 	if amount <= 0 {
 		return &ValidationError{"deposit", "amount must be positive"}
@@ -34,11 +42,14 @@ func (account *Account) Withdraw(amount float64) error {
 	return nil
 }
 
-func (account *Account) MakeTransactions(commandList []string) string {
+// ProcessTransactions — вся бизнес-логика, никакого форматирования.
+// Раньше это была первая половина MakeTransactions.
+func (account *Account) ProcessTransactions(commandList []string) TransactionResult {
 	var rejectedTransactions []rejectedEntry
 	var totalDeposited float64
 	var totalWithdrawn float64
 	var transactionsApplied int
+
 	for i, line := range commandList {
 		command, amount, err := utils.ParseLine(line)
 		if err != nil {
@@ -67,25 +78,34 @@ func (account *Account) MakeTransactions(commandList []string) string {
 			rejectedTransactions = append(rejectedTransactions, rejectedEntry{Line: i + 1, Err: defaultError})
 		}
 	}
-	return account.getTransactionsStat(rejectedTransactions, totalDeposited, totalWithdrawn, transactionsApplied)
+
+	return TransactionResult{
+		Rejected:            rejectedTransactions,
+		TotalDeposited:      totalDeposited,
+		TotalWithdrawn:      totalWithdrawn,
+		TransactionsApplied: transactionsApplied,
+		FinalBalance:        account.Balance,
+	}
 }
 
-func (account *Account) getTransactionsStat(
-	rejectedTransactions []rejectedEntry,
-	deposited float64,
-	withdrawn float64,
-	transactionsApplied int,
-) string {
+// MakeTransactions — тонкая обёртка для main: вычислить + отформатировать.
+// Старые вызовы в main.go не трогаем вообще.
+func (account *Account) MakeTransactions(commandList []string) string {
+	result := account.ProcessTransactions(commandList)
+	return account.getTransactionsStat(result)
+}
+
+func (account *Account) getTransactionsStat(result TransactionResult) string {
 	var out strings.Builder
-	fmt.Fprintf(&out, "Final balance: %.2f\n", account.Balance)
-	fmt.Fprintf(&out, "Total deposited: %.2f\n", deposited)
-	fmt.Fprintf(&out, "Total withdrawn: %.2f\n", withdrawn)
-	fmt.Fprintf(&out, "Transactions applied: %d\n", transactionsApplied)
-	fmt.Fprintf(&out, "Transactions rejected: %d\n", len(rejectedTransactions))
-	if len(rejectedTransactions) > 0 {
+	fmt.Fprintf(&out, "Final balance: %.2f\n", result.FinalBalance)
+	fmt.Fprintf(&out, "Total deposited: %.2f\n", result.TotalDeposited)
+	fmt.Fprintf(&out, "Total withdrawn: %.2f\n", result.TotalWithdrawn)
+	fmt.Fprintf(&out, "Transactions applied: %d\n", result.TransactionsApplied)
+	fmt.Fprintf(&out, "Transactions rejected: %d\n", len(result.Rejected))
+	if len(result.Rejected) > 0 {
 		fmt.Fprintln(&out, "Rejected details:")
-		for _, rejectedTransaction := range rejectedTransactions {
-			fmt.Fprintf(&out, "%d: %s\n", rejectedTransaction.Line, rejectedTransaction.Err)
+		for _, r := range result.Rejected {
+			fmt.Fprintf(&out, "%d: %s\n", r.Line, r.Err.Error())
 		}
 	}
 	return out.String()
