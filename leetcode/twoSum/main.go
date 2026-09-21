@@ -3,20 +3,15 @@ package main
 import "fmt"
 
 func twoSum(nums []int, target int) []int {
-	leftPointer, rightPointer := 0, 1
-	result := []int{nums[leftPointer], nums[rightPointer]}
-	if len(nums) == 2 {
-		return result
-	}
-	for ; leftPointer < len(nums); leftPointer++ {
-		for ; rightPointer < len(nums); rightPointer++ {
-			if nums[leftPointer]+nums[rightPointer] == target {
-				result = []int{leftPointer, rightPointer}
-			}
+	seen := make(map[int]int)
+	for i, num := range nums {
+		second := target - num
+		if index, ok := seen[second]; ok {
+			return []int{index, i}
 		}
-		rightPointer = leftPointer + 2
+		seen[num] = i
 	}
-	return result
+	return nil
 }
 
 func main() {
